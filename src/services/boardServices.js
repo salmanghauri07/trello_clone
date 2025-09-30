@@ -13,18 +13,20 @@ export default class boardServices extends baseRepository {
     options = {},
     populate = ""
   ) {
-    let condition = { _id: boardId };
+    let filter = { _id: boardId };
 
     if (access === "owner") {
-      condition.owner = userId;
+      filter.owner = userId;
     } else if (access === "member") {
-      condition.$or = [{ owner: userId }, { "members.user": userId }];
+      filter.$or = [{ owner: userId }, { "members.user": userId }];
     }
 
-    let q = this.model.findOne(condition, projection, options);
+    let query = this.model.findOne(filter, projection, options);
 
-    if (populate) q = q.populate(populate);
+    if (populate) {
+      query = query.populate(populate);
+    }
 
-    return q;
+    return query;
   }
 }

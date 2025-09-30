@@ -17,6 +17,10 @@ router.get("/getAllBoardsOfUser", boardController.getAllBoardsOfUser);
 
 router.get("/getBoard/:id", boardController.getBoardById);
 
-router.delete("/deleteBoard/:id", boardController.deleteBoard);
+router.delete("/deleteBoard/:boardId", boardController.deleteBoard);
+
+router.post("/addMember/:boardId", boardController.addMember);
+
+router.delete("/removeMember/:boardId/:userId", boardController.removeMember);
 
 export default router;

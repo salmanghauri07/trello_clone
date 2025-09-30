@@ -94,9 +94,10 @@ export default class boardController {
 
   static async deleteBoard(req, res) {
     try {
-      const id = req.params.id;
+      const id = req.params.boardId;
       const user = req.user;
 
+      // to return the board and also check if the user is owner
       const board = await boardDb.findByIdWithAccess(
         id,
         user.id,
@@ -112,7 +113,7 @@ export default class boardController {
 
       await boardDb.deleteById(board._id);
 
-      return ApiResponse.success(res, messages.DELETE_BOARD_SUCCESS, 200);
+      return ApiResponse.success(res, messages.DELETE_BOARD_SUCCESS, null, 200);
     } catch (err) {
       return ApiResponse.error(
         res,
@@ -121,4 +122,74 @@ export default class boardController {
       );
     }
   }
+
+  static async addMember(req, res) {
+    try {
+      const id = req.params.boardId;
+      const user = req.user;
+      const { email, role } = req.body;
+
+      // Check for existing user
+      const existingUser = await userDb.findOne({ email });
+      if (!existingUser) {
+        throw new ApiError(messages.USER_NOT_EXIST, 400);
+      }
+
+      // Find board with access
+      const board = await boardDb.findByIdWithAccess(id, user.id, "owner");
+      if (!board) {
+        throw new ApiError(messages.BOARD_NOT_EXIST, 404);
+      }
+
+      //  Prevent adding owner as member
+      if (board.owner.equals(existingUser._id)) {
+        throw new ApiError(messages.CANNOT_ADD_OWNER_AS_MEMBER, 400);
+      }
+
+      // Prevent duplicates
+
+      if (board.members.some((m) => m.user.equals(existingUser._id))) {
+        throw new ApiError(messages.USER_ALREADY_MEMBER, 400);
+      }
+
+      await boardDb.updateById(board._id, {
+        $push: { members: { user: existingUser._id, role } },
+      });
+
+      return ApiResponse.success(res, messages.MEMBER_ADD_SUCCESS, null, 200);
+    } catch (err) {
+      return ApiResponse.error(res, err.message, err.statusCode || 500);
+    }
+  }
+
+  static async removeMember(req, res) {
+    try {
+      const userId = req.params.userId;
+      const boardId = req.params.boardId;
+      const user = req.user;
+
+      // Find board with access
+      const board = await boardDb.findByIdWithAccess(boardId, user.id, "owner");
+      if (!board) throw new ApiError(messages.BOARD_NOT_EXIST, 404);
+
+      // check if member exists
+      const memberExists = board.members.some((m) => m.user.equals(userId));
+      if (!memberExists) throw new ApiError(messages.MEMBER_NOT_EXIST, 404);
+
+      await boardDb.updateById(board._id, {
+        $pull: { members: { user: userId } },
+      });
+
+      return ApiResponse.success(
+        res,
+        messages.MEMBER_REMOVE_SUCCESS,
+        null,
+        200
+      );
+    } catch (err) {
+      return ApiResponse.error(res, err.message, err.statusCode || 500);
+    }
+  }
+
+  static async updateRole(req, res) {}
 }

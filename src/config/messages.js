@@ -26,6 +26,10 @@ const messages = {
   GET_BOARD_FAILED: "Failed to fetch the baord",
   BOARD_NOT_EXIST: "The board of this id doesn't exist",
   DELETE_BOARD_FAILED: "Failed to delete the board",
+  USER_NOT_OWNER_ERROR: "The user is not owner",
+  USER_ALREADY_MEMBER: "User is already member",
+  CANNOT_ADD_OWNER_AS_MEMBER: "Can't add owner as member",
+  MEMBER_NOT_EXIST: "Member doesn't exist",
 
   // general
   VERIFICATION_EMAIL_SUBJECT: "Verification through OTP",
@@ -39,6 +43,8 @@ const messages = {
   GET_ALL_BOARDS_SUCCESS: "All boards for the user are fetched successfully",
   GET_BOARD_SUCCESS: "Board has been fetched successfully",
   DELETE_BOARD_SUCCESS: "Board has been deleted successfully",
+  MEMBER_REMOVE_SUCCESS: "Member is removed successfully",
+  MEMBER_ADD_SUCCESS: "Member is added successfully",
 };
 
 export default messages;
