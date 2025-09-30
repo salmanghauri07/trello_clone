@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import { ApiError } from "./apiError.js";
 import messages from "../config/messages.js";
-import config from "../config/environment_variables.js";
+import config from "../config/settings.js";
 
 const transporter = nodemailer.createTransport({
   host: "smtp.ethereal.email",

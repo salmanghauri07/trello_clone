@@ -2,7 +2,7 @@ import { ZodError } from "zod";
 import messages from "../config/messages.js";
 import ApiResponse from "../utils/apiResponse.js";
 
-function authValidation(schema) {
+function validateSchema(schema) {
   return async function (req, res, next) {
     try {
       const parsed = await schema.parseAsync(req.body);
@@ -24,4 +24,4 @@ function authValidation(schema) {
   };
 }
 
-export default authValidation;
+export default validateSchema;

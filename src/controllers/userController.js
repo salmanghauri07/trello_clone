@@ -6,7 +6,7 @@ import generateOTP from "../utils/generateOTP.js";
 import { sendEmail } from "../utils/sendMail.js";
 import { ApiError } from "../utils/apiError.js";
 import userServices from "../services/userServices.js";
-import config from "../config/environment_variables.js";
+import config from "../config/settings.js";
 import User from "../models/user.js";
 import { verificationTemplate } from "../utils/emailTemplates/verificationTemplate.js";
 

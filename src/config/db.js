@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import config from "./environment_variables.js";
+import config from "./settings.js";
 
 async function connectDB() {
   try {
