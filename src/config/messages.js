@@ -22,6 +22,10 @@ const messages = {
   NO_ACCESS_TOKEN: "No access token provided",
   USER_NOT_EXIST: "User doesn't exist",
   BOARD_CREATION_FAILED: "Board creation failed",
+  GET_ALL_BOARDS_FAILED: "Failed to fetch all the boards for the user",
+  GET_BOARD_FAILED: "Failed to fetch the baord",
+  BOARD_NOT_EXIST: "The board of this id doesn't exist",
+  DELETE_BOARD_FAILED: "Failed to delete the board",
 
   // general
   VERIFICATION_EMAIL_SUBJECT: "Verification through OTP",
@@ -32,6 +36,9 @@ const messages = {
   LOGIN_SUCCESS: "Login Successful",
   ACCESS_TOKEN_GENERATED: "New access token generated",
   BOARD_CREATED_SUCCESSFULLY: "Board has been created successfully",
+  GET_ALL_BOARDS_SUCCESS: "All boards for the user are fetched successfully",
+  GET_BOARD_SUCCESS: "Board has been fetched successfully",
+  DELETE_BOARD_SUCCESS: "Board has been deleted successfully",
 };
 
 export default messages;

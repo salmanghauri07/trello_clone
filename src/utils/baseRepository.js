@@ -20,7 +20,11 @@ export default class baseRepository {
   // Find multiple documents
   async find(query = {}, projection = {}, options = {}, populate = "") {
     let q = this.model.find(query, projection, options);
-    if (populate) q = q.populate(populate);
+    if (Array.isArray(populate)) {
+      populate.forEach((p) => (q = q.populate(p)));
+    } else if (populate) {
+      q = q.populate(populate);
+    }
     return q;
   }
 
