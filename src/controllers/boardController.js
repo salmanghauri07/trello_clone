@@ -191,5 +191,26 @@ export default class boardController {
     }
   }
 
-  static async updateRole(req, res) {}
+  static async updateRole(req, res) {
+    try {
+      const { boardId, userId } = req.params; // board + member whose role will change
+      const currentUser = req.user;
+      const { role } = req.body; // new role
+
+      // Find board with access
+      const board = await boardDb.findByIdWithAccess(boardId, currentUser.id);
+      if (!board) throw new ApiError(messages.BOARD_NOT_EXIST, 404);
+
+      const isMember = board.members.some((m) => m.user.equals(userId));
+      if (!isMember) throw new ApiError(messages.MEMBER_NOT_EXIST, 404);
+
+      await boardDb.updateOne(
+        { _id: board._id, "members.user": userId },
+        { $set: { "members.$.role": role } }
+      );
+      return ApiResponse.success(res, messages.ROLE_UPDATE_SUCCESS, null, 200);
+    } catch (err) {
+      return ApiResponse.error(res, err.message, err.statusCode || 500);
+    }
+  }
 }
