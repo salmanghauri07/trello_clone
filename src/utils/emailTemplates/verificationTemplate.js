@@ -1,4 +1,4 @@
-export function verificationTemplate({ name = "User", otp }) {
+export function verificationTemplate({ name = "User", OTP }) {
   const year = new Date().getFullYear();
 
   return `
@@ -31,7 +31,7 @@ export function verificationTemplate({ name = "User", otp }) {
                 <!-- OTP box -->
                 <div style="display:flex; justify-content:center; margin:0 0 22px;">
                   <div style="background:#f8fafc; border:1px dashed #e2e8f0; padding:18px 28px; border-radius:8px; text-align:center; font-size:28px; letter-spacing:4px; font-weight:700; color:#0f172a;">
-                    ${otp}
+                    ${OTP}
                   </div>
                 </div>
 

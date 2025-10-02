@@ -16,4 +16,6 @@ router.post(
 );
 router.post("/login", validateSchema(schema.loginSchema), userController.login);
 router.get("/refresh", userController.refresh);
+
+router.get("/resendOTP/:token", userController.resendOtp);
 export default router;

@@ -7,7 +7,7 @@ import { sendEmail } from "../utils/sendMail.js";
 import { ApiError } from "../utils/apiError.js";
 import userServices from "../services/userServices.js";
 import config from "../config/settings.js";
-import User from "../models/user.js";
+import User from "../models/User.js";
 import { verificationTemplate } from "../utils/emailTemplates/verificationTemplate.js";
 
 const userDb = new userServices(User);
@@ -16,79 +16,79 @@ const companyDb = new userServices(Company);
 export default class userController {
   static async signup(req, res) {
     try {
-      const { name, email, password, company } = req.body;
+      const { username, email, password, company } = req.body;
 
       const existingUser = await userDb.findOne(
-        { email: email },
-        { _id: 1, isVerified: 1, name: 1, email: 1, company: 1 }
+        { email },
+        { _id: 1, isVerified: 1, username: 1, email: 1, company: 1 }
       );
-      // Check if user already exists and is verified
+
+      // ✅ Check if user already exists and is verified
       if (existingUser && existingUser.isVerified) {
         throw new ApiError(messages.USER_EXIST_ERROR, 400);
       }
 
-      let OTP = null;
-      // Check if user already exists and is not verified
-      if (existingUser && !existingUser.isVerified) {
-        OTP = generateOTP();
-        // store the new otp in db
-        await userDb.updateById(
-          existingUser._id,
-          {
-            $set: {
-              OTP: OTP,
-              otpExpiresAt: new Date(Date.now() + 5 * 60 * 1000),
-            },
-          },
-          { runValidators: true }
-        );
-
-        // Send OTP through email
-        await sendEmail(
-          email,
-          messages.VERIFICATION_EMAIL_SUBJECT,
-          verificationTemplate({ name, OTP })
-        );
-
-        return ApiResponse.success(res, messages.SIGNUP_SUCCESS, {
-          user: {
-            id: existingUser._id,
-            name: existingUser.name,
-            email: existingUser.email,
-            company: existingUser.company,
-            isVerified: existingUser.isVerified,
-          },
-        });
-      }
-      // Check if company exists
+      // ✅ Check if company exists
       const existingCompany = await companyDb.findOne({ name: company });
       if (!existingCompany) {
         throw new ApiError(messages.COMPANY_NOT_FOUND_ERROR, 400);
       }
       const companyId = existingCompany._id;
 
-      OTP = generateOTP();
+      let OTP = null;
+      let user = existingUser;
 
-      const newUser = await userDb.create({
-        name,
-        email,
-        password,
-        company: companyId,
-        OTP,
-        otpExpiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 mins
-      });
+      if (existingUser && !existingUser.isVerified) {
+        // User exists but not verified → regenerate OTP
+        OTP = generateOTP();
 
-      await sendEmail(email, messages.VERIFICATION_EMAIL_SUBJECT, OTP, name);
+        await userDb.updateById(
+          existingUser._id,
+          {
+            $set: {
+              username,
+              password,
+              OTP,
+              otpExpiresAt: new Date(Date.now() + 5 * 60 * 1000),
+            },
+          },
+          { runValidators: true }
+        );
 
-      return ApiResponse.success(res, messages.SIGNUP_SUCCESS, {
-        user: {
-          id: newUser._id,
-          name: newUser.name,
-          email: newUser.email,
-          company: newUser.company,
-          isVerified: newUser.isVerified,
-        },
-      });
+        // Send OTP
+        await sendEmail(
+          email,
+          messages.VERIFICATION_EMAIL_SUBJECT,
+          verificationTemplate({ username, OTP })
+        );
+      } else {
+        // New user
+        OTP = generateOTP();
+
+        user = await userDb.create({
+          username,
+          email,
+          password,
+          company: companyId,
+          OTP,
+          otpExpiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 mins
+        });
+
+        await sendEmail(
+          email,
+          messages.VERIFICATION_EMAIL_SUBJECT,
+          verificationTemplate({ username, OTP })
+        );
+      }
+
+      // ✅ Generate short-lived JWT for OTP verification
+      const otpToken = jwt.sign(
+        { userId: user._id, email: user.email, purpose: "otp" },
+        config.SIGNUP_TOKEN_SECRET,
+        { expiresIn: "10m" } // expires in 10 minutes
+      );
+
+      return ApiResponse.success(res, messages.SIGNUP_SUCCESS, { otpToken });
     } catch (err) {
       return ApiResponse.error(
         res,
@@ -99,7 +99,9 @@ export default class userController {
   }
 
   static async verifyOtp(req, res) {
+    console.log("Verify OTP request body:", req.body);
     try {
+      console.log("Verify OTP request body:", req.body);
       const { otp } = req.body;
 
       const user = await userDb.findOne({ OTP: otp });
@@ -120,16 +122,78 @@ export default class userController {
       return ApiResponse.success(res, messages.OTP_VERIFIED, {
         user: {
           id: user._id,
-          name: user.name,
+          username: user.username,
           email: user.email,
           company: user.company,
           isVerified: true,
         },
       });
     } catch (err) {
+      console.log("Verify OTP request body:", req.body);
       return ApiResponse.error(
         res,
         err.message || messages.OTP_VERIFICATION_FAILED,
+        err.statusCode || 500
+      );
+    }
+  }
+
+  static async resendOtp(req, res) {
+    try {
+      const { token } = req.params;
+      console.log(token, "token in resend otp");
+
+      // 🔐 Verify token
+
+      const decoded = jwt.verify(token, config.SIGNUP_TOKEN_SECRET);
+
+      if (!decoded) {
+        throw new ApiError(messages.INVALID_OR_EXPIRED_OTP_TOKEN, 400);
+      }
+
+      const { userId, email } = decoded;
+
+      // 🔍 Find user
+      const user = await userDb.findById(userId);
+      if (!user) {
+        throw new ApiError(messages.USER_NOT_FOUND, 404);
+      }
+
+      if (user.isVerified) {
+        throw new ApiError(messages.USER_ALREADY_VERIFIED, 400);
+      }
+
+      // 🔄 Generate new OTP
+      const newOtp = generateOTP();
+
+      await userDb.updateById(user._id, {
+        $set: {
+          OTP: newOtp,
+          otpExpiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 min
+        },
+      });
+
+      // 📧 Send new OTP email
+      await sendEmail(
+        user.email,
+        messages.VERIFICATION_EMAIL_SUBJECT,
+        verificationTemplate({ username: user.username, OTP: newOtp })
+      );
+
+      // ✅ Optionally issue a new fresh token (refresh expiry)
+      const otpToken = jwt.sign(
+        { userId: user._id, email: user.email, purpose: "otp" },
+        config.SIGNUP_TOKEN_SECRET,
+        { expiresIn: "10m" }
+      );
+
+      return ApiResponse.success(res, messages.OTP_RESENT_SUCCESSFULLY, {
+        otpToken,
+      });
+    } catch (err) {
+      return ApiResponse.error(
+        res,
+        err.message || messages.FAILED_TO_RESEND_OTP,
         err.statusCode || 500
       );
     }
@@ -176,6 +240,8 @@ export default class userController {
       // send the cookie
       res.cookie("jwt", refreshToken, {
         httpOnly: true,
+        sameSite: "lax", // allow cross-site
+        path: "/",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
@@ -194,31 +260,31 @@ export default class userController {
   static async refresh(req, res) {
     try {
       // 1. Get refresh token from cookies
+
       const token = req.cookies?.jwt;
       if (!token) {
         return ApiResponse.error(res, messages.JWT_COOKIE_NOT_FOUND, 401);
       }
-
-      // verfiy token
-      jwt.verify(token, config.REFRESH_TOKEN_SECRET, async (err, decoded) => {
-        if (err) {
-          throw new ApiError(messages.JWT_ERROR, 403);
-        }
-
-        const user = await userDb.findById(decoded.id);
-        if (!user || user.refreshToken[0] !== token) {
-          throw new ApiError(res, messages.REFRESH_TOKEN_NOT_VALID, 403);
-        }
-
-        const newAccessToken = userServices.createToken(
-          { id: user._id, email: user.email },
-          config.ACCESS_TOKEN_SECRET,
-          "15m"
-        );
-
-        return ApiResponse.success(res, messages.ACCESS_TOKEN_GENERATED, {
-          accessToken: newAccessToken,
-        });
+      // 2. Verify refresh token
+      let decoded;
+      try {
+        decoded = jwt.verify(token, config.REFRESH_TOKEN_SECRET);
+      } catch (err) {
+        return ApiResponse.error(res, messages.JWT_ERROR, 401);
+      }
+      // 3. Check user & stored refresh token
+      const user = await userDb.findById(decoded.id);
+      if (!user) {
+        return ApiResponse.error(res, messages.REFRESH_TOKEN_NOT_VALID, 403);
+      }
+      // 4. Issue new access token
+      const newAccessToken = userServices.createToken(
+        { id: user._id, email: user.email },
+        config.ACCESS_TOKEN_SECRET,
+        "15m"
+      );
+      return ApiResponse.success(res, messages.ACCESS_TOKEN_GENERATED, {
+        accessToken: newAccessToken,
       });
     } catch (err) {
       return ApiResponse.error(

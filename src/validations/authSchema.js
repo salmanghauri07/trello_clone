@@ -11,7 +11,7 @@ import { z } from "zod";
  */
 
 export const signupSchema = z.object({
-  name: z
+  username: z
     .string()
     .min(2, "Name must be at least 2 characters")
     .max(100, "Name too long")
@@ -40,7 +40,6 @@ export const loginSchema = z.object({
 });
 
 export const otpSchema = z.object({
-  email: z.string().email({ message: "Invalid email address" }),
   otp: z
     .string()
     .length(6, { message: "OTP must be exactly 6 digits" })

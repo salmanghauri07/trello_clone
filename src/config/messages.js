@@ -2,6 +2,11 @@ import { INVALID } from "zod/v3";
 
 const messages = {
   // errors
+  INVALID_OR_EXPIRED_OTP_TOKEN: "Invalid or expired OTP token",
+  USER_NOT_FOUND: "User not found",
+  USER_ALREADY_VERIFIED: "User already verified",
+  OTP_RESENT_SUCCESSFULLY: "OTP resent successfully",
+  FAILED_TO_RESEND_OTP: "Failed to resend OTP",
   VALIDATION_ERROR: "validation failed",
   USER_EXIST_ERROR: "user already exists",
   COMPANY_NOT_FOUND_ERROR:
@@ -45,6 +50,7 @@ const messages = {
   DELETE_BOARD_SUCCESS: "Board has been deleted successfully",
   MEMBER_REMOVE_SUCCESS: "Member is removed successfully",
   MEMBER_ADD_SUCCESS: "Member is added successfully",
+  OTP_RESENT_SUCCESSFULLY: "OTP resent successfully",
 };
 
 export default messages;

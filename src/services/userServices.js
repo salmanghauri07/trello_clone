@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import messages from "../config/messages.js";
 import { ApiError } from "../utils/apiError.js";
 import baseRepository from "../utils/baseRepository.js";
-import User from "../models/user.js";
+import User from "../models/User.js";
 
 export default class userServices extends baseRepository {
   constructor(model) {

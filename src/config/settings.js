@@ -7,6 +7,7 @@ const config = {
   ETHEREAL_PASSWORD: process.env.ETHEREAL_PASSWORD,
   ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET,
   REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET,
+  SIGNUP_TOKEN_SECRET: process.env.SIGNUP_TOKEN_SECRET,
 };
 
 export default config;

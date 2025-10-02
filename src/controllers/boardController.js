@@ -1,6 +1,6 @@
 import messages from "../config/messages.js";
 import Board from "../models/Board.js";
-import User from "../models/user.js";
+import User from "../models/User.js";
 import boardServices from "../services/boardServices.js";
 import ApiResponse from "../utils/apiResponse.js";
 import { ApiError } from "../utils/apiError.js";
@@ -11,6 +11,7 @@ const userDb = new boardServices(User);
 export default class boardController {
   static async createBoard(req, res) {
     try {
+      console.log("this api is called");
       const { title, description } = req.body;
       const user = req.user;
       const newUser = await userDb.findOne({ email: user.email });
