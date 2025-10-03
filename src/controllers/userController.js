@@ -10,6 +10,7 @@ import config from "../config/settings.js";
 import User from "../models/User.js";
 import { verificationTemplate } from "../utils/emailTemplates/verificationTemplate.js";
 import Board from "../models/Board.js";
+import { ca } from "zod/locales";
 
 const userDb = new userServices(User);
 const companyDb = new userServices(Company);
@@ -314,6 +315,23 @@ export default class userController {
       return ApiResponse.error(
         res,
         err.message || messages.TOKEN_GENERATION_FAILED,
+        err.statusCode || 500
+      );
+    }
+  }
+
+  static async logout(req, res) {
+    try {
+      const token = req.cookies?.jwt;
+      if (!token) {
+        return ApiResponse.error(res, messages.JWT_COOKIE_NOT_FOUND, 401);
+      }
+      res.clearCookie("jwt", { httpOnly: true, sameSite: "lax", path: "/" });
+      return ApiResponse.success(res, messages.LOGOUT_SUCCESS, {}, 200);
+    } catch (err) {
+      return ApiResponse.error(
+        res,
+        err.message || messages.LOGOUT_FAILED,
         err.statusCode || 500
       );
     }

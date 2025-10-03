@@ -35,6 +35,7 @@ const messages = {
   USER_ALREADY_MEMBER: "User is already member",
   CANNOT_ADD_OWNER_AS_MEMBER: "Can't add owner as member",
   MEMBER_NOT_EXIST: "Member doesn't exist",
+  LOGOUT_FAILED: "Logout failed",
 
   // general
   VERIFICATION_EMAIL_SUBJECT: "Verification through OTP",
@@ -51,6 +52,7 @@ const messages = {
   MEMBER_REMOVE_SUCCESS: "Member is removed successfully",
   MEMBER_ADD_SUCCESS: "Member is added successfully",
   OTP_RESENT_SUCCESSFULLY: "OTP resent successfully",
+  LOGOUT_SUCCESS: "Logged out successfully",
 };
 
 export default messages;
