@@ -7,7 +7,6 @@ import config from "../config/settings.js";
 export function authMiddleware(req, res, next) {
   try {
     const authHeader = req.headers["authorization"];
-    console.log("Authorization Header:", authHeader); // Debugging line
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       throw new ApiError(messages.NO_ACCESS_TOKEN, 401);
     }
@@ -22,9 +21,6 @@ export function authMiddleware(req, res, next) {
     req.user = decoded;
     next();
   } catch (err) {
-    if (err.name === "TokenExpiredError") {
-      return ApiResponse.error(res, messages.ACCESS_TOKEN_EXPIRED, 401);
-    }
-    return ApiResponse.error(res, err.message, 500);
+    return ApiResponse.error(res, messages.ACCESS_TOKEN_EXPIRED, 401);
   }
 }

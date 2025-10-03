@@ -9,9 +9,11 @@ import userServices from "../services/userServices.js";
 import config from "../config/settings.js";
 import User from "../models/User.js";
 import { verificationTemplate } from "../utils/emailTemplates/verificationTemplate.js";
+import Board from "../models/Board.js";
 
 const userDb = new userServices(User);
 const companyDb = new userServices(Company);
+const boardDb = new userServices(Board);
 
 export default class userController {
   static async signup(req, res) {
@@ -35,6 +37,11 @@ export default class userController {
       }
       const companyId = existingCompany._id;
 
+      // ✅ Generate avatar URL using UI Avatars
+      const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        username
+      )}&background=random&color=fff&size=128`;
+
       let OTP = null;
       let user = existingUser;
 
@@ -50,6 +57,7 @@ export default class userController {
               password,
               OTP,
               otpExpiresAt: new Date(Date.now() + 5 * 60 * 1000),
+              avatar: avatarUrl,
             },
           },
           { runValidators: true }
@@ -72,6 +80,7 @@ export default class userController {
           company: companyId,
           OTP,
           otpExpiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 mins
+          avatar: avatarUrl,
         });
 
         await sendEmail(
@@ -245,8 +254,24 @@ export default class userController {
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
+      const boards = await boardDb.find(
+        {
+          $or: [{ owner: user.id }, { "members.user": user.id }],
+        },
+        {},
+        {},
+        ["owner", "company", "members.user"]
+      );
+
       return ApiResponse.success(res, messages.LOGIN_SUCCESS, {
         accessToken: accessToken,
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          company: user.company,
+          avatar: user.avatar,
+        },
       });
     } catch (err) {
       return ApiResponse.error(
@@ -260,7 +285,6 @@ export default class userController {
   static async refresh(req, res) {
     try {
       // 1. Get refresh token from cookies
-
       const token = req.cookies?.jwt;
       if (!token) {
         return ApiResponse.error(res, messages.JWT_COOKIE_NOT_FOUND, 401);

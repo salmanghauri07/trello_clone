@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       lowercase: true,
+      unique: true, // ✅ usually a good practice for users
     },
     password: {
       type: String,
@@ -23,9 +24,12 @@ const userSchema = new mongoose.Schema(
       ref: "Company",
       required: false,
     },
-
+    avatar: {
+      type: String, // ✅ will store URL from ui-avatars.com
+      default: "", // fallback if no avatar is assigned
+    },
     refreshToken: {
-      type: [String], // we only need to store the JWT string
+      type: [String], // store multiple refresh tokens if needed
       required: false,
       default: null,
     },
@@ -43,13 +47,13 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// to store password after hashing
+// ✅ Hash password before save
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
 });
 
-// custom function for decrypting the password
+// ✅ Compare candidate password
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
