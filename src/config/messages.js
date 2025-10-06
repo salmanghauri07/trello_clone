@@ -37,6 +37,10 @@ const messages = {
   MEMBER_NOT_EXIST: "Member doesn't exist",
   LOGOUT_FAILED: "Logout failed",
 
+  // list errors
+  ADD_LIST_FAILED: "Failed to add the list",
+  DELETE_LIST_FAILED: "Failed to delte the list",
+  LIST_NOT_FOUND: "List not found",
   // general
   VERIFICATION_EMAIL_SUBJECT: "Verification through OTP",
 
@@ -53,6 +57,8 @@ const messages = {
   MEMBER_ADD_SUCCESS: "Member is added successfully",
   OTP_RESENT_SUCCESSFULLY: "OTP resent successfully",
   LOGOUT_SUCCESS: "Logged out successfully",
+  LIST_ADD_SUCCESS: "List added successfully",
+  LIST_DELETED_SUCCESS: "List deleted successfully",
 };
 
 export default messages;

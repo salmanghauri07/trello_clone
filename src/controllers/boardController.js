@@ -74,8 +74,9 @@ export default class boardController {
         "company",
         "members.user",
       ]);
+      console.log(board);
       if (!board) {
-        throw new ApiError(messages.BOARD_NOT_EXIST, 400);
+        throw new ApiError(messages.BOARD_NOT_EXIST, 404);
       }
 
       return ApiResponse.success(
@@ -213,5 +214,26 @@ export default class boardController {
     } catch (err) {
       return ApiResponse.error(res, err.message, err.statusCode || 500);
     }
+  }
+
+  static async inviteMember(req, res) {
+    const { identifier, role } = req.body;
+    const boardId = req.params.boardId;
+
+    // check if identifier is an email
+    const isEmail = /\S+@\S+\.\S+/.test(identifier);
+    const user = await userDb.findOne(
+      isEmail ? { email: identifier } : { username: identifier }
+    );
+    if (!user) throw new ApiError(messages.USER_NOT_EXIST, 404);
+
+    // Check if board exists
+    const board = await boardDb.findById(boardId);
+    if (!board) throw new ApiError(messages.BOARD_NOT_EXIST, 404);
+
+    const isMember = board.members.some(
+      (member) => member.user.toString() === user._id.toString()
+    );
+    if (isMember) throw new ApiError(messages.USER_ALREADY_MEMBER, 404);
   }
 }

@@ -12,7 +12,7 @@ const BoardSchema = new mongoose.Schema({
   members: [
     {
       user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-      role: { type: String, enum: ["editor", "viewer"], default: "member" },
+      role: { type: String, enum: ["editor", "viewer"] },
     },
   ],
   createdAt: { type: Date, default: Date.now },

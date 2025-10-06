@@ -1,5 +1,11 @@
-export function verificationTemplate({ name = "User", OTP }) {
+export function invitationTemplate({
+  inviterName = "A team member",
+  username = "User",
+  role = "viewer",
+  token,
+}) {
   const year = new Date().getFullYear();
+  const inviteLink = `https://yourapp.com/invite/${token}`; // replace with your actual invite URL
 
   return `
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation" 
@@ -12,8 +18,8 @@ export function verificationTemplate({ name = "User", OTP }) {
             <!-- Header -->
             <tr>
               <td style="padding:28px 32px; text-align:center; background:linear-gradient(90deg,#4f46e5,#06b6d4); color:white;">
-                <h1 style="margin:0; font-size:20px; font-weight:600;">Verify your email</h1>
-                <p style="margin:6px 0 0; font-size:13px; opacity:0.95;">One-time password (OTP) for signing in</p>
+                <h1 style="margin:0; font-size:20px; font-weight:600;">You're invited to collaborate</h1>
+                <p style="margin:6px 0 0; font-size:13px; opacity:0.95;">Join your team and start working together</p>
               </td>
             </tr>
 
@@ -21,29 +27,42 @@ export function verificationTemplate({ name = "User", OTP }) {
             <tr>
               <td style="padding:28px 32px; color:#0f172a;">
                 <p style="margin:0 0 16px; font-size:15px;">
-                  Hi <strong>${name}</strong>,
+                  Hi <strong>${username}</strong>,
                 </p>
 
-                <p style="margin:0 0 24px; font-size:15px; color:#334155;">
-                  Use the verification code below to complete your signup. This code will expire in <strong>5 minutes</strong>.
+                <p style="margin:0 0 20px; font-size:15px; color:#334155;">
+                  <strong>${inviterName}</strong> has invited you to join a board as a <strong>${role}</strong>.
                 </p>
 
-                <!-- OTP box -->
-                <div style="display:flex; justify-content:center; margin:0 0 22px;">
-                  <div style="background:#f8fafc; border:1px dashed #e2e8f0; padding:18px 28px; border-radius:8px; text-align:center; font-size:28px; letter-spacing:4px; font-weight:700; color:#0f172a;">
-                    ${OTP}
-                  </div>
-                </div>
+                <p style="margin:0 0 28px; font-size:14px; color:#475569;">
+                  Click the button below to accept the invitation and start collaborating instantly.
+                </p>
 
+                <!-- Button -->
+                <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto 28px;">
+                  <tr>
+                    <td align="center">
+                      <a href="${inviteLink}" target="_blank" rel="noopener noreferrer"
+                        style="display:inline-block; background:#2563eb; color:#ffffff; text-decoration:none;
+                        font-weight:600; font-size:15px; padding:12px 26px; border-radius:8px;">
+                        Accept Invitation
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Fallback link -->
                 <p style="margin:0 0 18px; font-size:13px; color:#64748b;">
-                  If you didn't request this, you can ignore this email — no changes were made to your account.
+                  Or copy this link into your browser:
+                </p>
+                <p style="word-break:break-all; margin:8px 0 0; font-size:13px;">
+                  <a href="${inviteLink}" target="_blank" style="color:#2563eb; text-decoration:underline;">${inviteLink}</a>
                 </p>
 
-                <hr style="border:none; border-top:1px solid #eef2f7; margin:18px 0;" />
+                <hr style="border:none; border-top:1px solid #eef2f7; margin:24px 0;" />
 
                 <p style="margin:0; font-size:12px; color:#94a3b8;">
-                  Need help? Reply to this email or contact support at 
-                  <a href="mailto:support@example.com" style="color:#0ea5a4; text-decoration:none;">support@example.com</a>.
+                  If you didn't expect this invitation, you can safely ignore this email.
                 </p>
               </td>
             </tr>
@@ -51,9 +70,11 @@ export function verificationTemplate({ name = "User", OTP }) {
             <!-- Footer -->
             <tr>
               <td style="padding:18px 24px; background:#fbfdff; text-align:center; font-size:12px; color:#94a3b8;">
+                Invited by <strong>${inviterName}</strong><br/>
                 © ${year} InvexTech. All rights reserved.
               </td>
             </tr>
+
           </table>
         </td>
       </tr>
